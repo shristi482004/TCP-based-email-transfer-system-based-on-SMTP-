@@ -207,6 +207,7 @@
       transition: background 0.1s, transform 0.08s;
       display: grid;
       grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
       gap: 0.4rem 1rem;
       align-items: start;
     }
@@ -239,6 +240,7 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       grid-column: 1;
+      grid-row: 2;
     }
 
     .email-time {
@@ -247,6 +249,8 @@
       opacity: 0.5;
       white-space: nowrap;
       grid-row: 1;
+      grid-column: 2;
+      text-align: right;
     }
 
     .email-list-empty {
