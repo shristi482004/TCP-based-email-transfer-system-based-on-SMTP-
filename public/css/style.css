@@ -1,0 +1,174 @@
+/* ============================================================
+   style.css — Neubrutalist Design System
+   Thick borders, flat colors, hard shadows, raw type
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap');
+
+/* ── Variables ──────────────────────────────────────────────── */
+:root {
+  --black:   #0a0a0a;
+  --white:   #fafafa;
+  --yellow:  #ffe135;
+  --red:     #ff3131;
+  --blue:    #1a1aff;
+  --green:   #00cc66;
+  --orange:  #ff6b00;
+  --pink:    #ff2d78;
+  --bg:      #f5f0e8;
+  --border:  3px solid var(--black);
+  --shadow:  5px 5px 0px var(--black);
+  --shadow-lg: 8px 8px 0px var(--black);
+  --radius:  0px;
+  --font-mono: 'Space Mono', monospace;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+/* ── Reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--black);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── Typography ─────────────────────────────────────────────── */
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0.02em; }
+h1 { font-size: clamp(2.5rem, 6vw, 5rem); }
+h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); }
+h3 { font-size: 1.3rem; }
+code, .mono { font-family: var(--font-mono); font-size: 0.85em; }
+
+/* ── Brutalist Components ───────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--yellow);
+  color: var(--black);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.08s, box-shadow 0.08s;
+  white-space: nowrap;
+}
+.btn:hover  { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--black); }
+.btn:active { transform: translate(3px, 3px);   box-shadow: 2px 2px 0 var(--black); }
+
+.btn-black  { background: var(--black); color: var(--white); }
+.btn-red    { background: var(--red);   color: var(--white); }
+.btn-blue   { background: var(--blue);  color: var(--white); }
+.btn-green  { background: var(--green); color: var(--black); }
+.btn-white  { background: var(--white); color: var(--black); }
+.btn-lg     { padding: 1rem 2rem; font-size: 1rem; }
+.btn-sm     { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+
+.card {
+  background: var(--white);
+  border: var(--border);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 2px solid var(--black);
+}
+.tag-yellow { background: var(--yellow); }
+.tag-red    { background: var(--red);    color: var(--white); }
+.tag-green  { background: var(--green); }
+.tag-blue   { background: var(--blue);   color: var(--white); }
+.tag-orange { background: var(--orange); color: var(--white); }
+
+/* ── Form Elements ──────────────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.form-input, .form-textarea {
+  padding: 0.7rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  background: var(--white);
+  border: var(--border);
+  box-shadow: 3px 3px 0 var(--black);
+  outline: none;
+  transition: box-shadow 0.1s;
+  width: 100%;
+}
+.form-input:focus, .form-textarea:focus {
+  box-shadow: 5px 5px 0 var(--blue);
+}
+.form-textarea { resize: vertical; min-height: 120px; }
+
+/* ── Toast Notifications ────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+.toast {
+  padding: 0.9rem 1.2rem;
+  border: var(--border);
+  box-shadow: var(--shadow);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  max-width: 320px;
+  animation: slideIn 0.2s ease, fadeOut 0.3s ease 2.7s forwards;
+  pointer-events: auto;
+}
+.toast-success { background: var(--green); }
+.toast-error   { background: var(--red);    color: var(--white); }
+.toast-info    { background: var(--yellow); }
+@keyframes slideIn  { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOut  { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
+
+/* ── Loader ─────────────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 3px solid var(--black);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Divider ────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 3px solid var(--black);
+  margin: 1.5rem 0;
+}

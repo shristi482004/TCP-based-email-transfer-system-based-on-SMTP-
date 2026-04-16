@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MailSim — Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* ── Layout ─────────────────────────────────────────── */
+    body { background-color: var(--bg); }
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Top Bar ─────────────────────────────────────────── */
+    .topbar {
+      grid-column: 1 / -1;
+      background: var(--black);
+      color: var(--white);
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-logo {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--yellow);
+      letter-spacing: 0.05em;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    .user-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--yellow);
+      object-fit: cover;
+    }
+
+    .user-avatar-placeholder {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--yellow);
+      background: var(--yellow);
+      color: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    .sidebar {
+      background: var(--white);
+      border-right: var(--border);
+      padding: 1.5rem 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-section {
+      padding: 0 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.4;
+      padding: 0 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.75rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: background 0.1s, border-color 0.1s;
+      user-select: none;
+    }
+    .nav-item:hover { background: var(--bg); border-color: var(--black); }
+    .nav-item.active {
+      background: var(--yellow);
+      border: 2px solid var(--black);
+      box-shadow: 3px 3px 0 var(--black);
+    }
+
+    .nav-icon { font-size: 1rem; }
+
+    .unread-badge {
+      background: var(--red);
+      color: var(--white);
+      border: 2px solid var(--black);
+      border-radius: 0;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.1rem 0.4rem;
+      min-width: 20px;
+      text-align: center;
+      display: none;
+    }
+
+    /* ── Main Content ────────────────────────────────────── */
+    .main {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Panel Headers ───────────────────────────────────── */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: var(--border);
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+
+    /* ── Compose Form ────────────────────────────────────── */
+    .compose-card {
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow-lg);
+      max-width: 680px;
+    }
+
+    .compose-header {
+      background: var(--black);
+      color: var(--white);
+      padding: 0.8rem 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .compose-body { padding: 1.5rem; }
+
+    .smtp-trace {
+      background: var(--black);
+      color: var(--green);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.75rem 1rem;
+      border-top: var(--border);
+      min-height: 40px;
+      display: none;
+      line-height: 1.8;
+    }
+    .smtp-trace.visible { display: block; }
+    .smtp-trace .trace-line { opacity: 0; animation: appear 0.2s forwards; }
+    @keyframes appear { to { opacity: 1; } }
+
+    /* ── Email List ──────────────────────────────────────── */
+    .email-list { display: flex; flex-direction: column; gap: 0; }
+
+    .email-item {
+      background: var(--white);
+      border: var(--border);
+      border-bottom: none;
+      padding: 1rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.1s, transform 0.08s;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.4rem 1rem;
+      align-items: start;
+    }
+    .email-item:last-child { border-bottom: var(--border); }
+    .email-item:hover { background: var(--bg); transform: translateX(3px); }
+    .email-item.unread { background: #fffbea; }
+    .email-item.unread .email-sender { font-weight: 700; }
+
+    .email-sender {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      truncate: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 280px;
+    }
+
+    .email-subject {
+      font-size: 0.9rem;
+      font-weight: 500;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .email-preview {
+      font-size: 0.8rem;
+      color: #777;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      grid-column: 1;
+    }
+
+    .email-time {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      opacity: 0.5;
+      white-space: nowrap;
+      grid-row: 1;
+    }
+
+    .email-list-empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-text { font-family: var(--font-mono); font-size: 0.8rem; opacity: 0.5; text-transform: uppercase; }
+
+    /* ── Email Viewer Modal ──────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border: var(--border);
+      box-shadow: 12px 12px 0 var(--black);
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: var(--black);
+      color: var(--white);
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+    }
+
+    .modal-subject {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .modal-close {
+      background: var(--red);
+      border: 2px solid var(--white);
+      color: var(--white);
+      width: 30px; height: 30px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { background: #cc0000; }
+
+    .modal-meta {
+      padding: 1rem 1.2rem;
+      border-bottom: var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .modal-body {
+      padding: 1.2rem;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      flex: 1;
+    }
+
+    .modal-actions {
+      padding: 1rem 1.2rem;
+      border-top: var(--border);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── SMTP Status chips ───────────────────────────────── */
+    .smtp-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border: 2px solid var(--black);
+      text-transform: uppercase;
+    }
+    .smtp-delivered { background: var(--green); }
+    .smtp-queued    { background: var(--yellow); }
+    .smtp-failed    { background: var(--red); color: var(--white); }
+    .smtp-progress  { background: var(--orange); color: var(--white); }
+    .smtp-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ── Reply Box ───────────────────────────────────────── */
+    .reply-box {
+      border-top: var(--border);
+      background: var(--bg);
+      padding: 1rem 1.2rem;
+      display: none;
+    }
+    .reply-box.open { display: block; }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .app-layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ── Top Bar ── -->
+  <header class="topbar">
+    <div class="topbar-logo">MAILSIM</div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div id="userAvatar" class="user-avatar-placeholder">?</div>
+        <span id="userName">Loading...</span>
+      </div>
+      <a href="/auth/logout" class="btn btn-red btn-sm">LOGOUT</a>
+    </div>
+  </header>
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Mailboxes</div>
+      <div class="nav-item active" data-panel="inbox" onclick="switchPanel('inbox')">
+        <span><span class="nav-icon"></span> Inbox</span>
+        <span class="unread-badge" id="unreadBadge">0</span>
+      </div>
+      <div class="nav-item" data-panel="sent" onclick="switchPanel('sent')">
+        <span><span class="nav-icon"></span> Sent</span>
+      </div>
+    </div>
+    <div class="sidebar-section" style="margin-top:1rem">
+      <div class="sidebar-label">Actions</div>
+      <div class="nav-item" data-panel="compose" onclick="switchPanel('compose')">
+        <span><span class="nav-icon"></span> Compose</span>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding: 1rem; border-top: var(--border);">
+      <div class="info-box" style="background:var(--bg);border:2px solid var(--black);padding:.75rem;font-family:var(--font-mono);font-size:.65rem;line-height:1.7">
+        <strong>SMTP</strong> → async, non-blocking<br>
+        <strong>POP3</strong> → RETR on inbox load<br>
+        <span style="opacity:.5">TCP simulated in-process</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- INBOX PANEL -->
+    <div id="panel-inbox" class="panel active">
+      <div class="panel-header">
+        <div class="panel-title">INBOX</div>
+        <button class="btn btn-sm" onclick="loadInbox()">⟳ REFRESH</button>
+      </div>
+      <div id="inboxList" class="email-list">
+        <div class="email-list-empty">
+          <div class="spinner"></div>
+          <div class="empty-text" style="margin-top:1rem">Loading inbox...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SENT PANEL -->
+    <div id="panel-sent" class="panel">
+      <div class="panel-header">
+        <div class="panel-title">SENT</div>
+        <button class="btn btn-sm" onclick="loadSent()">⟳ REFRESH</button>
+      </div>
+      <div id="sentList" class="email-list">
+        <div class="email-list-empty">
+          <div class="empty-icon"></div>
+          <div class="empty-text">No sent emails yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPOSE PANEL -->
+    <div id="panel-compose" class="panel">
+      <div class="panel-header">
+        <div class="panel-title">COMPOSE</div>
+        <div class="tag tag-yellow">SMTP SIMULATION</div>
+      </div>
+
+      <div class="compose-card">
+        <div class="compose-header">
+          <span>▶</span>
+          <span>NEW MESSAGE — SMTP HANDSHAKE SIMULATION</span>
+        </div>
+        <div class="compose-body">
+          <div class="form-group">
+            <label class="form-label">TO</label>
+            <input class="form-input" id="composeTo" type="email" placeholder="recipient@example.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">SUBJECT</label>
+            <input class="form-input" id="composeSubject" type="text" placeholder="What's this about?" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">MESSAGE</label>
+            <textarea class="form-textarea" id="composeMessage" placeholder="Write your message..."></textarea>
+          </div>
+          <input type="hidden" id="composeReplyTo" value="" />
+          <button class="btn btn-black" id="sendBtn" onclick="sendEmail()">
+            <span id="sendBtnText">SEND MESSAGE</span>
+            <span id="sendBtnSpinner" class="spinner" style="display:none; border-color:var(--white); border-top-color:transparent"></span>
+          </button>
+        </div>
+        <!-- SMTP trace log -->
+        <div class="smtp-trace" id="smtpTrace"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Email Viewer Modal ── -->
+<div class="modal-overlay" id="emailModal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-subject" id="modalSubject">Subject</div>
+      <button class="modal-close" onclick="closeEmailModal()">✕</button>
+    </div>
+    <div class="modal-meta">
+      <div><strong>FROM:</strong> <span id="modalFrom"></span></div>
+      <div><strong>TO:</strong>   <span id="modalTo"></span></div>
+      <div><strong>DATE:</strong> <span id="modalDate"></span></div>
+      <div style="margin-top:.4rem">
+        <span id="modalSmtpStatus"></span>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" onclick="openReply()">↩ REPLY</button>
+      <button class="btn btn-sm btn-black" onclick="openForward()">→ FORWARD</button>
+    </div>
+    <!-- Reply box -->
+    <div class="reply-box" id="replyBox">
+      <div class="form-group">
+        <label class="form-label">REPLY</label>
+        <textarea class="form-textarea" id="replyMessage" placeholder="Write your reply..."></textarea>
+      </div>
+      <button class="btn btn-green btn-sm" onclick="sendReply()">SEND REPLY</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast Container ── -->
+<div id="toast-container"></div>
+
+<script src="/js/app.js"></script>
